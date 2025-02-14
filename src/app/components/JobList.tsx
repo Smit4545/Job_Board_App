@@ -50,7 +50,7 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   )
 
   const [loading, setLoading] = useState(false)
-  const shouldFetch = useRef(false) // Avoid initial fetch duplication
+ // const shouldFetch = useRef(false) // Avoid initial fetch duplication
 
   //Animation Variants for Job Cards (Framer Motion)
   const jobCardVariants = {
@@ -103,11 +103,7 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
 
   // Trigger job fetching when `searchQuery` or `selectedCategory` changes
   useEffect(() => {
-    if (shouldFetch.current) {
       debouncedFetchJobs(searchQuery, selectedCategory)
-    } else {
-      shouldFetch.current = true
-    }
   }, [searchQuery, selectedCategory, debouncedFetchJobs])
 
   return (
