@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../lib/store'
 import { setJobs } from '../../redux/jobSlice'
@@ -17,7 +17,7 @@ async function fetchFilteredJobs(title: string, category: string) {
 
   // Append query parameters only if they exist
   if (title) queryParams.append('search', title)
-  if (category) queryParams.append('category', category)
+  if (category && category !== 'all') queryParams.append('category', category)
 
   //Construct the API URL with filters
   if (queryParams.toString()) url += `?${queryParams.toString()}`
@@ -50,7 +50,7 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   )
 
   const [loading, setLoading] = useState(false)
-  //const shouldFetch = useRef(false) // Avoid initial fetch duplication
+  const shouldFetch = useRef(false) // Avoid initial fetch duplication
 
   //Animation Variants for Job Cards (Framer Motion)
   const jobCardVariants = {
@@ -83,8 +83,8 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   }, [dispatch, initialJobs])
 
   //Debounced function to fetch jobs (prevents unnecessary API calls)
-  const debouncedFetchJobs = useMemo(
-    () => debounce(async (query: string, category: string) => {
+  const debouncedFetchJobs = useRef(
+    debounce(async (query: string, category: string) => {
       if (!query && category === 'all') {
         dispatch(setJobs(initialJobs)) // Reset to initial jobs if no filters are applied
         setLoading(false)
@@ -98,14 +98,16 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
       //Update Redux store with fetched jobs (or empty array if none found)
       dispatch(setJobs(filteredJobs.length === 0 ? [] : filteredJobs))
       setLoading(false)
-    }, 1000), //1-second debounce time
-    [dispatch, initialJobs]
-  )
+    }, 1000) //1-second debounce time
+  ).current
+
   // Trigger job fetching when `searchQuery` or `selectedCategory` changes
   useEffect(() => {
-    
+    if (shouldFetch.current) {
       debouncedFetchJobs(searchQuery, selectedCategory)
-  
+    } else {
+      shouldFetch.current = true
+    }
   }, [searchQuery, selectedCategory, debouncedFetchJobs])
 
   return (
@@ -142,7 +144,7 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
               whileHover="hover"
               className="border border-gray-300 rounded-lg p-6 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out bg-gradient-to-br from-slate-100 to-slate-300 flex flex-col justify-between"
             >
-              {/*Clicking a job redirects to job details page */}
+              {/* Clicking a job redirects to job details page */}
               <Link href={`/job/${job.id}`}>
                 <p className="text-xl font-extrabold text-gray-900 transition-colors mb-2">
                   {job.title}
