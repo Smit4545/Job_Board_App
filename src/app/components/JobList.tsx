@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../lib/store'
 import { setJobs } from '../../redux/jobSlice'
@@ -50,7 +50,7 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   )
 
   const [loading, setLoading] = useState(false)
-  // const shouldFetch = useRef(false) // Avoid initial fetch duplication
+  const shouldFetch = useRef(false) // Avoid initial fetch duplication
 
   //Animation Variants for Job Cards (Framer Motion)
   const jobCardVariants = {
@@ -103,9 +103,11 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   )
   // Trigger job fetching when `searchQuery` or `selectedCategory` changes
   useEffect(() => {
-    
+    if (shouldFetch.current) {
       debouncedFetchJobs(searchQuery, selectedCategory)
-    
+    } else {
+      shouldFetch.current = true
+    }
   }, [searchQuery, selectedCategory, debouncedFetchJobs])
 
   return (
