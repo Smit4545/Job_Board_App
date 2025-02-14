@@ -103,11 +103,9 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   )
   // Trigger job fetching when `searchQuery` or `selectedCategory` changes
   useEffect(() => {
-    if (shouldFetch.current) {
+    
       debouncedFetchJobs(searchQuery, selectedCategory)
-    } else {
-      shouldFetch.current = true
-    }
+    
   }, [searchQuery, selectedCategory, debouncedFetchJobs])
 
   return (
