@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../lib/store'
 import { setJobs } from '../../redux/jobSlice'
@@ -83,8 +83,8 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   }, [dispatch, initialJobs])
 
   //Debounced function to fetch jobs (prevents unnecessary API calls)
-  const debouncedFetchJobs = useRef(
-    debounce(async (query: string, category: string) => {
+  const debouncedFetchJobs = useMemo(
+    () => debounce(async (query: string, category: string) => {
       if (!query && category === 'all') {
         dispatch(setJobs(initialJobs)) // Reset to initial jobs if no filters are applied
         setLoading(false)
@@ -98,9 +98,9 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
       //Update Redux store with fetched jobs (or empty array if none found)
       dispatch(setJobs(filteredJobs.length === 0 ? [] : filteredJobs))
       setLoading(false)
-    }, 1000) //1-second debounce time
-  ).current
-
+    }, 1000), //1-second debounce time
+    [dispatch, initialJobs]
+  )
   // Trigger job fetching when `searchQuery` or `selectedCategory` changes
   useEffect(() => {
     if (shouldFetch.current) {
