@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState,useRef} from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../lib/store'
 import { setJobs } from '../../redux/jobSlice'
@@ -9,6 +9,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import SearchAndFilter from './SearchAndFilter'
+
 
 //Function to fetch jobs based on search filters (title & category)
 async function fetchFilteredJobs(title: string, category: string) {
@@ -80,31 +81,37 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   // Initialize Redux store with `initialJobs` only once
   useEffect(() => {
     dispatch(setJobs(initialJobs))
+    console.log("initial")
   }, [dispatch, initialJobs])
 
   //Debounced function to fetch jobs (prevents unnecessary API calls)
   const debouncedFetchJobs = useRef(
     debounce(async (query: string, category: string) => {
+      setLoading(true) // Start loading
+      console.log(category, query)
       if (!query && category === 'all') {
-        dispatch(setJobs(initialJobs)) // Reset to initial jobs if no filters are applied
-        setLoading(false)
-        return
+        // Case: No filters applied → Reset to initial jobs
+        dispatch(setJobs(initialJobs))
+        console.log('reset1')
       }
-
-      setLoading(true)
-      const filteredJobs = await fetchFilteredJobs(query, category)
-      console.log('Filtered Jobs:', filteredJobs)
-
-      //Update Redux store with fetched jobs (or empty array if none found)
-      dispatch(setJobs(filteredJobs.length === 0 ? [] : filteredJobs))
-      setLoading(false)
-    }, 1000) //1-second debounce time
+      else if (!query && !category) {
+        dispatch(setJobs(initialJobs))
+        console.log('reset2')
+      }
+       else {
+        // Case: Filters applied → Fetch filtered jobs
+        const filteredJobs = await fetchFilteredJobs(query, category)
+        dispatch(setJobs(filteredJobs.length === 0 ? [] : filteredJobs))
+        console.log('filtered', query, category)
+      }
+      setLoading(false) // Stop loading after operation
+    }, 1000) // 1-second debounce
   ).current
 
   // Trigger job fetching when `searchQuery` or `selectedCategory` changes
-  useEffect(() => {
-      debouncedFetchJobs(searchQuery, selectedCategory)
-  }, [searchQuery, selectedCategory, debouncedFetchJobs])
+ useEffect(() => {
+   debouncedFetchJobs(searchQuery, selectedCategory)
+ }, [searchQuery, selectedCategory])
 
   return (
     <div className="container mx-auto px-4 py-6">
