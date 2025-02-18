@@ -5,6 +5,7 @@ import "./globals.css";
 import { Provider } from "react-redux";
 import { store } from "../lib/store";
 import Header from "./components/Header";
+import { Analytics } from '@vercel/analytics/next'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
         <Provider store={store}>
           <Header />
           {children}
+          <Analytics/>
         </Provider>
       </body>
     </html>
