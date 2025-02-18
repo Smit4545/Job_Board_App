@@ -227,29 +227,29 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   const jobsPerPage = 6
 
   //   Animation Variants for Job Cards (Framer Motion)
-    const jobCardVariants = {
-      hidden: { opacity: 0, y: 30, scale: 0.95 },
-      visible: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: { duration: 0.4, ease: 'easeOut' },
-      },
-      hover: {
-        scale: 1.05,
-        boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.2)',
-        transition: { duration: 0.2, ease: 'easeInOut' },
-      },
-    }
+  const jobCardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.4, ease: 'easeOut' },
+    },
+    hover: {
+      scale: 1.05,
+      boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.2)',
+      transition: { duration: 0.2, ease: 'easeInOut' },
+    },
+  }
 
-    //Container animation for staggered job cards
-    const containerVariants = {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: { staggerChildren: 0.15, delayChildren: 0.2 },
-      },
-    }
+  //Container animation for staggered job cards
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+    },
+  }
 
   // Initialize Redux store with `initialJobs` only once
   useEffect(() => {
@@ -260,14 +260,13 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   const debouncedFetchJobs = useRef(
     debounce(async (query: string, category: string) => {
       setLoading(true) // Start loading
-      console.log(category, query)
       if (!query && category === 'all') {
         // Case: No filters applied → Reset to initial jobs
         dispatch(setJobs(initialJobs))
         console.log('reset1')
       } else if (!query && !category) {
         dispatch(setJobs(initialJobs))
-        console.log('reset2')
+        console.log('reset2',initialJobs)
       } else {
         // Case: Filters applied → Fetch filtered jobs
         const filteredJobs = await fetchFilteredJobs(query, category)
@@ -279,6 +278,7 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   ).current
 
   useEffect(() => {
+    setCurrentPage(1)
     debouncedFetchJobs(searchQuery, selectedCategory)
   }, [searchQuery, selectedCategory])
 
